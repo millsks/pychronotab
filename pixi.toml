@@ -88,13 +88,14 @@ act-setup = "echo 'Updating .actrc and .secrets files for act configuration...' 
 act = "act"
 act-list = "act -l"
 act-dryrun = "act --dryrun"
-act-ci = "act workflow_dispatch -W .github/workflows/ci.yml"
-act-release = "act workflow_dispatch -W .github/workflows/release.yml"
+act-ci = "act push -W .github/workflows/ci.yml"
+act-pr = "act pull_request -W .github/workflows/ci.yml"
+act-release = "act workflow_dispatch -W .github/workflows/release.yml --input version=0.99.0-test --input prerelease=true"
 act-publish = "act release -W .github/workflows/publish.yml"
 act-maintenance = "act schedule -W .github/workflows/maintenance.yml"
 act-quality-monitoring = "act schedule -W .github/workflows/quality-monitoring.yml"
-act-release-test = "act workflow_dispatch -W .github/workflows/release.yml --input version=0.99.0 --input test_mode=true"
-act-rattler-build = "act workflow_dispatch -W .github/workflows/rattler-build.yml"
+act-sonarqube = "act push -W .github/workflows/sonarqube.yml"
+act-stale = "act schedule -W .github/workflows/stale.yml"
 
 # Combined tasks
 ci = { depends-on = ["check-all", "test-cov", "build"] }
