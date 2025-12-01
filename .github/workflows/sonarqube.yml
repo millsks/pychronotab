@@ -30,11 +30,11 @@ jobs:
         run: pixi install
 
       - name: Run tests with coverage
-        run: pixi run test-cov
+        run: pixi run -e test test-cov
 
       - name: Run ruff linting with JSON output
         run: |
-          pixi run lint --output-format=json > ruff-report.json || true
+          pixi run -e lint lint --output-format=json > ruff-report.json || true
 
       - name: SonarCloud Scan
         uses: sonarsource/sonarqube-scan-action@v5.3.0

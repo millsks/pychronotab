@@ -30,9 +30,9 @@ jobs:
 
       - name: Generate coverage report
         run: |
-          pixi run test-cov
-          pixi run -e default -- coverage json --pretty-print
-          pixi run -e default -- coverage html
+          pixi run -e test test-cov
+          pixi run -e test coverage json --pretty-print
+          pixi run -e test coverage html
 
       - name: Generate complexity report
         run: |
@@ -130,8 +130,8 @@ jobs:
 
       - name: Generate security report
         run: |
-          pixi run -e default -- bandit -r src/ -f json -o security-report.json || true
-          pixi run -e default -- bandit -r src/ -f html -o security-report.html || true
+          pixi run -e lint bandit -r src/ -f json -o security-report.json || true
+          pixi run -e lint bandit -r src/ -f html -o security-report.html || true
 
       - name: Check code quality thresholds
         run: |

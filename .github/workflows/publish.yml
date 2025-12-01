@@ -51,7 +51,7 @@ jobs:
 
       - name: Verify package integrity
         run: |
-          pixi run twine check dist/*
+          pixi run -e dev twine check dist/*
           echo "✅ Package integrity verified"
 
       # - name: Publish to Test PyPI

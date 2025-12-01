@@ -131,12 +131,12 @@ jobs:
 
       - name: Run quality checks
         run: |
-          pixi run lint
-          pixi run type-check
-          pixi run security-check
+          pixi run -e lint lint
+          pixi run -e lint type-check
+          pixi run -e lint security-check
 
       - name: Run tests with coverage
-        run: pixi run test-cov
+        run: pixi run -e test test-cov
 
       - name: Create temporary tag for changelog generation
         run: |
@@ -148,7 +148,7 @@ jobs:
       - name: Update CHANGELOG.md with git-cliff
         run: |
           # Generate changelog with the tag that now exists
-          pixi run git-cliff --output CHANGELOG.md
+          pixi run -e dev git-cliff --output CHANGELOG.md
 
           echo "✅ Updated CHANGELOG.md with version v${{ inputs.version }}"
 
@@ -166,11 +166,11 @@ jobs:
           git push origin main --tags
 
       - name: Build package
-        run: pixi run build
+        run: pixi run -e dev build
 
       - name: Check package
         run: |
-          pixi run twine check dist/*
+          pixi run -e dev twine check dist/*
 
       - name: Generate release notes
         id: release_notes

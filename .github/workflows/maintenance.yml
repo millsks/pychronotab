@@ -29,7 +29,7 @@ jobs:
 
       - name: Update pre-commit hooks
         run: |
-          pixi run -e default -- pre-commit autoupdate
+          pixi run -e dev pre-commit autoupdate
 
       - name: Check for changes
         id: changes
@@ -110,11 +110,11 @@ jobs:
       - name: Run security audit
         run: |
           # Run bandit security scan
-          pixi run -e default -- bandit -r src/ -f json -o bandit-security-report.json || true
+          pixi run -e lint bandit -r src/ -f json -o bandit-security-report.json || true
 
           # Run safety check (if requirements files exist)
           if ls requirements*.txt 1> /dev/null 2>&1; then
-            pixi run -e default -- safety check --json --output safety-security-report.json || true
+            pixi run -e lint safety check --json --output safety-security-report.json || true
           fi
 
       - name: Upload security scan results
