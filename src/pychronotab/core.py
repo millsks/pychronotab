@@ -5,12 +5,13 @@ Supports both 5-field and 6-field (with seconds) cron expressions.
 """
 
 from __future__ import annotations
+
+from collections.abc import Iterator
 from datetime import datetime, timedelta, timezone
-from typing import Iterator, Optional
 from zoneinfo import ZoneInfo
 
-from .fields import parse_cron_expression, CronField
 from .exceptions import CroniterBadDateError
+from .fields import CronField, parse_cron_expression
 
 
 class CronExpression:
@@ -29,7 +30,7 @@ class CronExpression:
         >>> next_run = expr.next(datetime.now(timezone.utc))
     """
 
-    def __init__(self, expr: str, tz: Optional[timezone | ZoneInfo] = None):
+    def __init__(self, expr: str, tz: timezone | ZoneInfo | None = None):
         """
         Initialize a cron expression.
 
@@ -49,7 +50,7 @@ class CronExpression:
         self.month_field: CronField = fields[4]
         self.dow_field: CronField = fields[5]
 
-    def _normalize_datetime(self, dt: Optional[datetime]) -> datetime:
+    def _normalize_datetime(self, dt: datetime | None) -> datetime:
         """Normalize datetime to be timezone-aware in self.tz."""
         if dt is None:
             dt = datetime.now(self.tz)
@@ -76,7 +77,7 @@ class CronExpression:
             self.dow_field.contains(cron_dow)
         )
 
-    def next(self, base: Optional[datetime] = None, *, inclusive: bool = False) -> datetime:
+    def next(self, base: datetime | None = None, *, inclusive: bool = False) -> datetime:
         """
         Get the next occurrence after (or at, if inclusive) base.
 
@@ -146,7 +147,7 @@ class CronExpression:
 
         return dt
 
-    def prev(self, base: Optional[datetime] = None, *, inclusive: bool = False) -> datetime:
+    def prev(self, base: datetime | None = None, *, inclusive: bool = False) -> datetime:
         """
         Get the previous occurrence before (or at, if inclusive) base.
 
@@ -213,7 +214,7 @@ class CronExpression:
 
     def iter(
         self,
-        start: Optional[datetime] = None,
+        start: datetime | None = None,
         *,
         direction: str = "forward",
         inclusive: bool = False

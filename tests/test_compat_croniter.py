@@ -2,8 +2,10 @@
 Tests for croniter API compatibility.
 """
 
-import pytest
 from datetime import datetime, timezone
+
+import pytest
+
 from pychronotab import croniter
 from pychronotab.exceptions import CroniterBadDateError
 

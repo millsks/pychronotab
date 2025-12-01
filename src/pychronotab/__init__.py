@@ -5,9 +5,9 @@ Supports both 5-field (standard) and 6-field (with seconds) cron expressions.
 Designed to avoid namespace conflicts with crontab/python-crontab packages.
 """
 
-from .core import CronExpression
 from .compat_croniter import croniter
-from .exceptions import CroniterError, CroniterBadCronError, CroniterBadDateError
+from .core import CronExpression
+from .exceptions import CroniterBadCronError, CroniterBadDateError, CroniterError
 
 try:
     from ._version import __version__

@@ -3,6 +3,7 @@ Tests for CronExpression core functionality.
 """
 
 from datetime import datetime, timezone
+
 from pychronotab import CronExpression
 
 

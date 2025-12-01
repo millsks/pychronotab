@@ -3,8 +3,9 @@ Tests for cron field parsing and iteration.
 """
 
 import pytest
-from pychronotab.fields import CronField, parse_cron_expression, MONTH_NAMES, DAY_NAMES
+
 from pychronotab.exceptions import CroniterBadCronError
+from pychronotab.fields import DAY_NAMES, MONTH_NAMES, CronField, parse_cron_expression
 
 
 class TestCronField:

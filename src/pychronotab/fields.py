@@ -6,9 +6,8 @@ into a sorted list of allowed values, enabling efficient next/prev lookups.
 """
 
 from __future__ import annotations
-from typing import List, Optional
-from .exceptions import CroniterBadCronError
 
+from .exceptions import CroniterBadCronError
 
 # Month and day name aliases
 MONTH_NAMES = {
@@ -33,7 +32,7 @@ class CronField:
         field_str: str,
         min_value: int,
         max_value: int,
-        aliases: Optional[dict[str, int]] = None
+        aliases: dict[str, int] | None = None
     ):
         self.field_str = field_str
         self.min_value = min_value
@@ -41,7 +40,7 @@ class CronField:
         self.aliases = aliases or {}
         self.values = self._parse(field_str)
 
-    def _parse(self, field_str: str) -> List[int]:
+    def _parse(self, field_str: str) -> list[int]:
         """Parse cron field string into sorted list of allowed values."""
         if not field_str or not field_str.strip():
             raise CroniterBadCronError(f"Empty field: '{field_str}'")
@@ -62,8 +61,8 @@ class CronField:
                     step = int(step_part)
                     if step <= 0:
                         raise CroniterBadCronError(f"Step must be positive: {part}")
-                except ValueError:
-                    raise CroniterBadCronError(f"Invalid step value: {part}")
+                except ValueError as e:
+                    raise CroniterBadCronError(f"Invalid step value: {part}") from e
 
                 # Determine range
                 if range_part == '*':
@@ -125,10 +124,10 @@ class CronField:
         # Parse as integer
         try:
             return int(value_str)
-        except ValueError:
-            raise CroniterBadCronError(f"Invalid value: '{value_str}'")
+        except ValueError as e:
+            raise CroniterBadCronError(f"Invalid value: '{value_str}'") from e
 
-    def next_value(self, current: int) -> Optional[int]:
+    def next_value(self, current: int) -> int | None:
         """
         Return the next allowed value strictly greater than current.
         Returns None if we need to wrap (no value > current in this field).
@@ -138,7 +137,7 @@ class CronField:
                 return val
         return None
 
-    def prev_value(self, current: int) -> Optional[int]:
+    def prev_value(self, current: int) -> int | None:
         """
         Return the previous allowed value strictly less than current.
         Returns None if we need to wrap (no value < current in this field).

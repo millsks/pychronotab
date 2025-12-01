@@ -6,15 +6,17 @@ All functionality is backed by pychronotab's CronExpression.
 """
 
 from __future__ import annotations
+
+from collections.abc import Iterator
 from datetime import datetime, timezone
-from typing import Any, Iterator, Optional, Type
+from typing import Any
 from zoneinfo import ZoneInfo
 
 from .core import CronExpression
 from .exceptions import CroniterBadDateError
 
 
-class croniter:
+class croniter:  # noqa: N801
     """
     croniter-compatible interface backed by CronExpression.
 
@@ -24,7 +26,7 @@ class croniter:
     Example:
         >>> from datetime import datetime
         >>> from pychronotab import croniter
-        >>> 
+        >>>
         >>> it = croniter("*/5 * * * *", datetime(2024, 1, 1, 12, 0))
         >>> print(it.get_next(datetime))
         >>> print(it.get_next(datetime))
@@ -33,9 +35,9 @@ class croniter:
     def __init__(
         self,
         expr_format: str,
-        start_time: Optional[datetime] = None,
+        start_time: datetime | None = None,
         day_or: bool = True,
-        max_years_between_matches: Optional[int] = None,
+        max_years_between_matches: int | None = None,
         **kwargs: Any
     ):
         """
@@ -52,7 +54,7 @@ class croniter:
         self._day_or = day_or
 
         # Determine timezone from start_time
-        tz: Optional[timezone | ZoneInfo] = None
+        tz: timezone | ZoneInfo | None = None
         if start_time is not None and start_time.tzinfo is not None:
             tz = start_time.tzinfo  # type: ignore[assignment]
 
@@ -61,10 +63,10 @@ class croniter:
 
         # Track current position
         self._start_time = start_time
-        self._current: Optional[datetime] = None
+        self._current: datetime | None = None
         self._initialized = False
 
-    def get_next(self, ret_type: Type = datetime) -> Any:
+    def get_next(self, ret_type: type = datetime) -> Any:
         """
         Get the next occurrence.
 
@@ -85,7 +87,7 @@ class croniter:
 
         return self._convert_return_type(self._current, ret_type)
 
-    def get_prev(self, ret_type: Type = datetime) -> Any:
+    def get_prev(self, ret_type: type = datetime) -> Any:
         """
         Get the previous occurrence.
 
@@ -106,7 +108,7 @@ class croniter:
 
         return self._convert_return_type(self._current, ret_type)
 
-    def get_current(self, ret_type: Type = datetime) -> Any:
+    def get_current(self, ret_type: type = datetime) -> Any:
         """
         Get the current occurrence (last returned by get_next/get_prev).
 
@@ -126,7 +128,7 @@ class croniter:
 
         return self._convert_return_type(self._current, ret_type)
 
-    def all_next(self, ret_type: Type = datetime) -> Iterator[Any]:
+    def all_next(self, ret_type: type = datetime) -> Iterator[Any]:
         """
         Iterate over all future occurrences.
 
@@ -139,7 +141,7 @@ class croniter:
         while True:
             yield self.get_next(ret_type)
 
-    def all_prev(self, ret_type: Type = datetime) -> Iterator[Any]:
+    def all_prev(self, ret_type: type = datetime) -> Iterator[Any]:
         """
         Iterate over all past occurrences.
 
@@ -163,7 +165,7 @@ class croniter:
         self._current = None
         self._initialized = False
 
-    def get_schedule(self, ret_type: Type = datetime) -> Any:
+    def get_schedule(self, ret_type: type = datetime) -> Any:
         """
         Alias for get_current() for compatibility.
 
@@ -176,7 +178,7 @@ class croniter:
         return self.get_current(ret_type)
 
     @staticmethod
-    def _convert_return_type(dt: datetime, ret_type: Type) -> Any:
+    def _convert_return_type(dt: datetime, ret_type: type) -> Any:
         """Convert datetime to requested return type."""
         if ret_type is datetime:
             return dt
@@ -188,7 +190,7 @@ class croniter:
             raise TypeError(f"Unsupported return type: {ret_type}")
 
     @property
-    def cur(self) -> Optional[float]:
+    def cur(self) -> float | None:
         """
         Current position as timestamp (for compatibility).
 
