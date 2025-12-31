@@ -19,9 +19,6 @@ jobs:
 
       - name: Set up Pixi
         uses: prefix-dev/setup-pixi@v0.9.0
-        with:
-          pixi-version: v0.52.0
-          cache: true
 
       - name: Update pixi dependencies
         run: |
@@ -100,9 +97,6 @@ jobs:
 
       - name: Set up Pixi
         uses: prefix-dev/setup-pixi@v0.9.0
-        with:
-          pixi-version: v0.52.0
-          cache: true
 
       - name: Install dependencies
         run: pixi install
