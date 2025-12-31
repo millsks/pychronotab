@@ -4215,8 +4215,8 @@ packages:
   timestamp: 1762092908165
 - pypi: ./
   name: pychronotab
-  version: 0.1.dev1
-  sha256: 126883c75f1b71862e23a8f380386e518888e33bdea4ccd43ab54fc45485ac84
+  version: 0.1.1.dev1
+  sha256: c606f9d2757f702fd070e65c713d3082d4dede3d5b4e0d9eb9c6d605521ad14d
   requires_python: '>=3.10'
   editable: true
 - conda: https://conda.anaconda.org/conda-forge/noarch/pycparser-2.22-pyh29332c3_1.conda
