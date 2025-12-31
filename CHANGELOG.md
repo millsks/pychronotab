@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0] - 2025-12-31
+
+### ⚙️ Miscellaneous Tasks
+
+- **deps**: Bump actions/upload-artifact from 4 to 5 (#6)
+- **deps**: Bump sonarsource/sonarqube-scan-action from 5.3.0 to 6.0.0 (#5)
+- **deps**: Bump actions/stale from 9 to 10 (#4)
+- **deps**: Bump robinraju/release-downloader from 1.11 to 1.12 (#3)
+- **deps**: Bump actions/checkout from 5 to 6 (#2)
+
 ## [0.2.0] - 2025-12-31
 
 ### 🐛 Bug Fixes
