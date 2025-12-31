@@ -7,7 +7,7 @@ Supports both 5-field and 6-field (with seconds) cron expressions.
 from __future__ import annotations
 
 from collections.abc import Iterator
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
 from .exceptions import CroniterBadDateError
@@ -39,7 +39,7 @@ class CronExpression:
             tz: Timezone for interpretation (default: UTC)
         """
         self.expr = expr
-        self.tz = tz or timezone.utc
+        self.tz = tz or UTC
 
         # Parse expression into field objects
         fields = parse_cron_expression(expr)
