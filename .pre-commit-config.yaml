@@ -23,7 +23,7 @@ repos:
 
   # Python formatting and linting with Ruff (replaces black, isort, flake8)
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.10
+    rev: v0.15.1
     hooks:
       - id: ruff
         name: ruff lint
@@ -46,7 +46,7 @@ repos:
 
   # Security scanning
   - repo: https://github.com/PyCQA/bandit
-    rev: 1.9.2
+    rev: 1.9.3
     hooks:
       - id: bandit
         args:
@@ -94,7 +94,7 @@ repos:
 
   # GitHub Actions workflow linting
   - repo: https://github.com/rhysd/actionlint
-    rev: v1.7.10
+    rev: v1.7.11
     hooks:
       - id: actionlint
 
