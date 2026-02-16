@@ -43,12 +43,30 @@ jobs:
         run: |
           git fetch --tags
           latest_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo no_tag_found)
-          echo "tag=" >> "$GITHUB_OUTPUT"
+          echo "tag=${latest_tag}" >> "$GITHUB_OUTPUT"
           if [ "$latest_tag" != "no_tag_found" ]; then
             echo "has_tags=true" >> "$GITHUB_OUTPUT"
           else
             echo "has_tags=false" >> "$GITHUB_OUTPUT"
           fi
+
+      - name: Compute next tag
+        id: next_tag
+        run: |
+          if [ "${{ steps.get_tag.outputs.has_tags }}" = "true" ]; then
+            base_tag="${{ steps.get_tag.outputs.tag }}"
+            base_tag="${base_tag#v}"
+            IFS='.' read -r major minor patch << EOF
+          ${base_tag}
+          EOF
+            patch=$((patch + 1))
+            next_tag="${major}.${minor}.${patch}"
+          else
+            next_tag="0.0.1"
+          fi
+
+          echo "NEXT_TAG=${next_tag}" >> "$GITHUB_ENV"
+          echo "next_tag=${next_tag}" >> "$GITHUB_OUTPUT"
 
       - name: Check for changes since last tag
         id: check_changes
@@ -75,9 +93,21 @@ jobs:
         with:
           pixi-version: v0.52.0
 
+      - name: Set release tag
+        id: set_release_tag
+        run: |
+          if [ -n "${{ inputs.version }}" ]; then
+            new_tag="${{ inputs.version }}"
+          else
+            new_tag="${{ steps.next_tag.outputs.next_tag }}"
+          fi
+
+          echo "NEW_TAG=${new_tag}" >> "$GITHUB_ENV"
+          echo "new_tag=${new_tag}" >> "$GITHUB_OUTPUT"
+
       - name: Validate version format
         run: |
-          if ! echo "${{ inputs.version }}" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.-]+)?$'; then
+          if ! echo "${{ env.NEW_TAG }}" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.-]+)?$'; then
             echo "❌ Invalid version format. Use semantic versioning (e.g., 1.0.0, 1.0.0-beta.1)"
             exit 1
           fi
@@ -85,12 +115,12 @@ jobs:
 
       - name: Check if version already exists
         run: |
-          if git tag | grep -q "^v${{ inputs.version }}$"; then
+          if git tag | grep -q "^v${{ env.NEW_TAG }}$"; then
             if [ "${{ inputs.force_recreate }}" = "true" ]; then
-              echo "⚠️  Version v${{ inputs.version }} already exists but force_recreate is enabled"
+              echo "⚠️  Version v${{ env.NEW_TAG }} already exists but force_recreate is enabled"
               echo "Will remove existing tag and release..."
             else
-              echo "❌ Version v${{ inputs.version }} already exists"
+              echo "❌ Version v${{ env.NEW_TAG }} already exists"
               echo "Use 'force_recreate' option to remove and recreate it"
               exit 1
             fi
@@ -103,7 +133,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.RELEASE_PAT }}
         run: |
-          VERSION="v${{ inputs.version }}"
+          VERSION="v${{ env.NEW_TAG }}"
 
           # Check if tag exists
           if git tag | grep -q "^${VERSION}$"; then
@@ -143,26 +173,26 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           # Create temporary tag for git-cliff to see
-          git tag -a "v${{ inputs.version }}" -m "Release v${{ inputs.version }}"
+          git tag -a "v${{ env.NEW_TAG }}" -m "Release v${{ env.NEW_TAG }}"
 
       - name: Update CHANGELOG.md with git-cliff
         run: |
           # Generate changelog with the tag that now exists
           pixi run -e dev git-cliff --output CHANGELOG.md
 
-          echo "✅ Updated CHANGELOG.md with version v${{ inputs.version }}"
+          echo "✅ Updated CHANGELOG.md with version v${{ env.NEW_TAG }}"
 
       - name: Commit changelog and recreate tag
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           # Remove the temporary tag
-          git tag -d "v${{ inputs.version }}"
+          git tag -d "v${{ env.NEW_TAG }}"
           # Add and commit the updated changelog
           git add CHANGELOG.md
-          git commit -m "Release v${{ inputs.version }}"
+          git commit -m "Release v${{ env.NEW_TAG }}"
           # Recreate the tag pointing to the commit with the changelog
-          git tag -a "v${{ inputs.version }}" -m "Release v${{ inputs.version }}"
+          git tag -a "v${{ env.NEW_TAG }}" -m "Release v${{ env.NEW_TAG }}"
           git push origin main --tags
 
       - name: Build package
@@ -176,7 +206,7 @@ jobs:
         id: release_notes
         run: |
           # Extract changelog content for this version
-          VERSION="${{ inputs.version }}"
+          VERSION="${{ env.NEW_TAG }}"
 
           # Check if CHANGELOG.md exists and has content for this version
           if [ -f "CHANGELOG.md" ]; then
@@ -196,7 +226,7 @@ jobs:
           ## Installation
 
           \`\`\`bash
-          pip install pychronotab==${{ inputs.version }}
+          pip install pychronotab==${{ env.NEW_TAG }}
           \`\`\`
 
           ## Verification
@@ -213,7 +243,7 @@ jobs:
               # Fallback to generic notes
               cat << EOF >> "$GITHUB_OUTPUT"
           notes<<RELEASE_NOTES
-          Release v${{ inputs.version }}
+          Release v${{ env.NEW_TAG }}
 
           ## Changes in this release
 
@@ -222,14 +252,14 @@ jobs:
           Please check the [full changelog](https://github.com/millsks/pychronotab/blob/main/CHANGELOG.md) for details.
 
           ### Package Information
-          - Version: ${{ inputs.version }}
+          - Version: ${{ env.NEW_TAG }}
           - Build date: $(date)
           - Commit: ${{ github.sha }}
 
           ## Installation
 
           \`\`\`bash
-          pip install pychronotab==${{ inputs.version }}
+          pip install pychronotab==${{ env.NEW_TAG }}
           \`\`\`
 
           ## Verification
@@ -245,17 +275,17 @@ jobs:
             # Fallback when no CHANGELOG.md exists
             cat << EOF >> "$GITHUB_OUTPUT"
           notes<<RELEASE_NOTES
-          Release v${{ inputs.version }}
+          Release v${{ env.NEW_TAG }}
 
           ### Package Information
-          - Version: ${{ inputs.version }}
+          - Version: ${{ env.NEW_TAG }}
           - Build date: $(date)
           - Commit: ${{ github.sha }}
 
           ## Installation
 
           \`\`\`bash
-          pip install pychronotab==${{ inputs.version }}
+          pip install pychronotab==${{ env.NEW_TAG }}
           \`\`\`
           RELEASE_NOTES
           EOF
@@ -265,8 +295,8 @@ jobs:
         id: create_release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ github.event.inputs.version }}
-          name: Release v${{ github.event.inputs.version }}
+          tag_name: v${{ env.NEW_TAG }}
+          name: Release v${{ env.NEW_TAG }}
           body: ${{ steps.release_notes.outputs.notes }}
           draft: false
           prerelease: ${{ github.event.inputs.prerelease }}
