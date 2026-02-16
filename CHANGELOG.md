@@ -5,6 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.5] - 2026-02-16
+
+### 🐛 Bug Fixes
+
+- Enhance release workflow to skip steps if no changes detected since last release (#29)
+
+## [1.0.3] - 2026-02-16
+
+### 🐛 Bug Fixes
+
+- Update release workflow to compute and set next version tag dynamically (#28)
+
+## [1.0.1] - 2026-02-16
+
+### ⚙️ Miscellaneous Tasks
+
+- **deps**: Bump actions/upload-artifact from 5 to 6 (#14)
+- **deps**: Bump peter-evans/create-pull-request from 7 to 8 (#15)
+- **deps**: Bump codecov/codecov-action from 3 to 5 (#12)
+- **deps**: Bump actions/labeler from 5 to 6 (#13)
+- **deps**: Bump sonarsource/sonarqube-scan-action from 6.0.0 to 7.0.0 (#16)
+- **deps**: Bump peter-evans/create-issue-from-file from 5 to 6 (#18)
+- **deps**: Bump prefix-dev/setup-pixi from 0.9.0 to 0.9.3 (#19)
+- **pixi**: Udpated lock file (#25)
+
+### 🐛 Bug Fixes
+
+- Pin setuptools <81.0 to avoid missing pkg_resources (#26)
+- Remove pinned version of marshmalllow to avoid vulnerability (#27)
+
 ## [1.0.0] - 2025-12-31
 
 ### ⚙️ Miscellaneous Tasks
