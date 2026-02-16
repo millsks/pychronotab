@@ -39,6 +39,10 @@ class TestCronField:
         field = CronField("10-30/5", 0, 59)
         assert field.values == [10, 15, 20, 25, 30]
 
+    def test_step_from_value_to_max(self):
+        field = CronField("5/10", 0, 59)
+        assert field.values == [5, 15, 25, 35, 45, 55]
+
     def test_month_names(self):
         field = CronField("JAN,MAR,DEC", 1, 12, MONTH_NAMES)
         assert field.values == [1, 3, 12]
@@ -68,6 +72,22 @@ class TestCronField:
     def test_out_of_bounds(self):
         with pytest.raises(CroniterBadCronError):
             CronField("70", 0, 59)
+
+    def test_empty_list_part_ignored(self):
+        field = CronField("1,,3", 0, 59)
+        assert field.values == [1, 3]
+
+    def test_invalid_step_value(self):
+        with pytest.raises(CroniterBadCronError):
+            CronField("*/foo", 0, 59)
+
+    def test_zero_step(self):
+        with pytest.raises(CroniterBadCronError):
+            CronField("*/0", 0, 59)
+
+    def test_invalid_alias(self):
+        with pytest.raises(CroniterBadCronError):
+            CronField("FOO", 0, 59)
 
     def test_empty_field(self):
         with pytest.raises(CroniterBadCronError):
