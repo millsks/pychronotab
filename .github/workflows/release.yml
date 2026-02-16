@@ -8,7 +8,7 @@ on:
     inputs:
       version:
         description: "Version to release (e.g., 1.0.0)"
-        required: true
+        required: false
         type: string
       prerelease:
         description: "Mark as pre-release"
@@ -100,7 +100,6 @@ jobs:
 
       - name: Set release tag
         id: set_release_tag
-        if: steps.should_skip.outputs.skip != 'true'
         run: |
           if [ -n "${{ inputs.version }}" ]; then
             new_tag="${{ inputs.version }}"
