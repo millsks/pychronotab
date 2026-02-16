@@ -2,7 +2,7 @@
 Tests for CronExpression core functionality.
 """
 
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta, timezone
 
 from pychronotab import CronExpression
 
@@ -99,6 +99,30 @@ class TestCronExpression:
 
         next1 = expr.next(base)
         assert next1.tzinfo == UTC
+
+    def test_timezone_conversion(self):
+        expr = CronExpression("0 0 * * *", tz=UTC)
+        base = datetime(2024, 1, 1, 1, 30, 0, tzinfo=timezone(timedelta(hours=2)))
+
+        next1 = expr.next(base)
+        assert next1 == datetime(2024, 1, 1, 0, 0, 0, tzinfo=UTC)
+
+    def test_prev_skips_non_matching_months(self):
+        expr = CronExpression("0 0 1 3 *", tz=UTC)
+        base = datetime(2024, 4, 15, 12, 0, 0, tzinfo=UTC)
+
+        prev1 = expr.prev(base)
+        assert prev1 == datetime(2024, 3, 1, 0, 0, 0, tzinfo=UTC)
+
+    def test_next_with_none_base(self):
+        expr = CronExpression("0 * * * *", tz=UTC)
+
+        next1 = expr.next(None)
+        assert next1.tzinfo == UTC
+
+    def test_repr(self):
+        expr = CronExpression("*/5 * * * *", tz=UTC)
+        assert "CronExpression" in repr(expr)
 
     def test_complex_expression(self):
         # Every 15 minutes during business hours on weekdays

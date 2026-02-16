@@ -56,6 +56,24 @@ class TestCroniterCompat:
         current = it.get_current(datetime)
         assert current == next1
 
+    def test_get_schedule_alias(self):
+        base = datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC)
+        it = croniter("*/5 * * * *", base)
+
+        it.get_next(datetime)
+        schedule = it.get_schedule(datetime)
+        assert schedule == it.get_current(datetime)
+
+    def test_get_next_int_and_invalid_type(self):
+        base = datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC)
+        it = croniter("*/5 * * * *", base)
+
+        next_int = it.get_next(int)
+        assert isinstance(next_int, int)
+
+        with pytest.raises(TypeError):
+            it.get_next(str)
+
     def test_all_next(self):
         base = datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC)
         it = croniter("*/10 * * * *", base)
@@ -125,3 +143,10 @@ class TestCroniterCompat:
 
         assert next(iterator) == datetime(2024, 1, 1, 12, 10, 0, tzinfo=UTC)
         assert next(iterator) == datetime(2024, 1, 1, 12, 20, 0, tzinfo=UTC)
+
+    def test_repr(self):
+        base = datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC)
+        it = croniter("*/10 * * * *", base)
+        it.get_next(datetime)
+
+        assert "croniter" in repr(it)
