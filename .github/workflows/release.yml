@@ -100,6 +100,7 @@ jobs:
 
       - name: Set release tag
         id: set_release_tag
+        if: steps.should_skip.outputs.skip != 'true'
         run: |
           if [ -n "${{ inputs.version }}" ]; then
             new_tag="${{ inputs.version }}"
