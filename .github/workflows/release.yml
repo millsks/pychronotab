@@ -83,18 +83,24 @@ jobs:
           fi
 
       - name: Skip release (no changes)
-        if: steps.check_changes.outputs.changed == 'false'
+        id: should_skip
         run: |
-          echo "::notice::No changes detected since last release. Skipping automated release."
-          exit 0
+          if [ "${{ steps.check_changes.outputs.changed }}" == "false" ]; then
+            echo "::notice::No changes detected since last release. Skipping automated release."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Setup pixi
+        if: steps.should_skip.outputs.skip != 'true'
         uses: prefix-dev/setup-pixi@v0.9.3
         with:
           pixi-version: v0.52.0
 
       - name: Set release tag
         id: set_release_tag
+        if: steps.should_skip.outputs.skip != 'true'
         run: |
           if [ -n "${{ inputs.version }}" ]; then
             new_tag="${{ inputs.version }}"
@@ -106,6 +112,7 @@ jobs:
           echo "new_tag=${new_tag}" >> "$GITHUB_OUTPUT"
 
       - name: Validate version format
+        if: steps.should_skip.outputs.skip != 'true'
         run: |
           if ! echo "${{ env.NEW_TAG }}" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.-]+)?$'; then
             echo "❌ Invalid version format. Use semantic versioning (e.g., 1.0.0, 1.0.0-beta.1)"
@@ -114,6 +121,7 @@ jobs:
           echo "✅ Version format is valid"
 
       - name: Check if version already exists
+        if: steps.should_skip.outputs.skip != 'true'
         run: |
           if git tag | grep -q "^v${{ env.NEW_TAG }}$"; then
             if [ "${{ inputs.force_recreate }}" = "true" ]; then
@@ -129,7 +137,7 @@ jobs:
           fi
 
       - name: Remove existing tag and release (if force_recreate enabled)
-        if: inputs.force_recreate == true
+        if: steps.should_skip.outputs.skip != 'true' && inputs.force_recreate == true
         env:
           GH_TOKEN: ${{ secrets.RELEASE_PAT }}
         run: |
@@ -160,15 +168,18 @@ jobs:
           fi
 
       - name: Run quality checks
+        if: steps.should_skip.outputs.skip != 'true'
         run: |
           pixi run -e lint lint
           pixi run -e lint type-check
           pixi run -e lint security-check
 
       - name: Run tests with coverage
+        if: steps.should_skip.outputs.skip != 'true'
         run: pixi run -e test test-cov
 
       - name: Create temporary tag for changelog generation
+        if: steps.should_skip.outputs.skip != 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -176,6 +187,7 @@ jobs:
           git tag -a "v${{ env.NEW_TAG }}" -m "Release v${{ env.NEW_TAG }}"
 
       - name: Update CHANGELOG.md with git-cliff
+        if: steps.should_skip.outputs.skip != 'true'
         run: |
           # Generate changelog with the tag that now exists
           pixi run -e dev git-cliff --output CHANGELOG.md
@@ -183,6 +195,7 @@ jobs:
           echo "✅ Updated CHANGELOG.md with version v${{ env.NEW_TAG }}"
 
       - name: Commit changelog and recreate tag
+        if: steps.should_skip.outputs.skip != 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -196,13 +209,16 @@ jobs:
           git push origin main --tags
 
       - name: Build package
+        if: steps.should_skip.outputs.skip != 'true'
         run: pixi run -e dev build
 
       - name: Check package
+        if: steps.should_skip.outputs.skip != 'true'
         run: |
           pixi run -e dev twine check dist/*
 
       - name: Generate release notes
+        if: steps.should_skip.outputs.skip != 'true'
         id: release_notes
         run: |
           # Extract changelog content for this version
@@ -292,6 +308,7 @@ jobs:
           fi
 
       - name: Create GitHub Release
+        if: steps.should_skip.outputs.skip != 'true'
         id: create_release
         uses: softprops/action-gh-release@v2
         with:
@@ -304,6 +321,7 @@ jobs:
           token: ${{ secrets.RELEASE_PAT }}
 
       - name: Verify publish workflow trigger
+        if: steps.should_skip.outputs.skip != 'true'
         run: |
           echo "✅ Release created: ${{ steps.create_release.outputs.url }}"
           echo "🔄 The publish workflow should trigger automatically when the release is published"
